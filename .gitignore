@@ -1,0 +1,47 @@
+# ============================================================
+# vigil-siem - arquivos que o Git deve IGNORAR
+# ============================================================
+
+# --- Segredos e configuração real (NUNCA versionar) ---
+# .env guarda senhas e chaves reais. Só o modelo .env.example vai ao GitHub.
+.env
+.env.*
+!.env.example
+
+# --- Python ---
+# Ambiente virtual: pesado e recriável com requirements.txt
+.venv/
+venv/
+# Cache gerado automaticamente pelo Python e pelas ferramentas
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+# Relatórios de cobertura de testes
+.coverage
+htmlcov/
+
+# --- Bancos de dados locais ---
+# O SQLite é um arquivo; ele pode conter eventos e dados sensíveis.
+*.db
+*.sqlite
+*.sqlite3
+data/
+
+# --- Logs ---
+*.log
+logs/
+
+# --- Node.js / Frontend (usado a partir da Fase 9) ---
+node_modules/
+dist/
+
+# --- Editores ---
+.vscode/
+.idea/
+
+# --- Arquivos de sistema do Windows e macOS ---
+Thumbs.db
+Desktop.ini
+.DS_Store
