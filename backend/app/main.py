@@ -2,12 +2,17 @@
 
 from fastapi import FastAPI
 
+from app.core.config import get_settings
+
+settings = get_settings()
+
 # Cria a aplicação. O título e a versão aparecem na documentação
 # automática, que o FastAPI gera em /docs.
 app = FastAPI(
-    title="Vigil SIEM",
+    title=settings.app_name,
     version="0.1.0",
     description="API de um SIEM construído do zero.",
+    debug=settings.debug,
 )
 
 

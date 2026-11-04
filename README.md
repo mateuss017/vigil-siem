@@ -59,6 +59,16 @@ python -m uvicorn app.main:app --reload
 
 Com o servidor no ar, `http://127.0.0.1:8000/health` responde `{"status":"ok"}` e `http://127.0.0.1:8000/docs` mostra a documentação interativa gerada automaticamente.
 
+## Configuração
+
+Copie o modelo e ajuste os valores se quiser (o arquivo `.env` não é versionado):
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Sem um `.env`, a aplicação usa valores padrão seguros.
+
 ## Testes
 
 Com o ambiente virtual ativo:
