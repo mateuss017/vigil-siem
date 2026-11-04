@@ -2,7 +2,7 @@
 
 Um SIEM (Security Information and Event Management) construído do zero, com foco em aprendizado e portfólio de Blue Team / SOC.
 
-> **Status: em desenvolvimento inicial.** Existe apenas uma API mínima com um endpoint de verificação de saúde e um teste automatizado. Nenhuma funcionalidade de SIEM (ingestão, detecção, alertas) está implementada ainda. Este README descreve o que existe hoje e o que está planejado, e é atualizado a cada etapa concluída.
+> **Status: em desenvolvimento inicial.** Existem uma API mínima com endpoint de verificação de saúde, configuração por variáveis de ambiente e uma tabela mínima de eventos em SQLite, tudo com testes automatizados. Nenhuma funcionalidade de SIEM (ingestão, detecção, alertas) está implementada ainda. Este README descreve o que existe hoje e o que está planejado, e é atualizado a cada etapa concluída.
 
 ## Objetivo
 
@@ -19,8 +19,9 @@ Construir uma aplicação real e funcional capaz de receber eventos de seguranç
 | Camada | Tecnologia | Situação |
 |---|---|---|
 | Backend | Python, FastAPI, Pydantic | Em uso (API mínima) |
-| Testes | Pytest | Em uso (1 teste) |
-| Banco de dados | SQLite no MVP (PostgreSQL depois), SQLAlchemy e Alembic | Planejado |
+| Testes | Pytest | Em uso (6 testes) |
+| Banco de dados | SQLite no MVP (PostgreSQL depois) com SQLAlchemy | Em uso (tabela mínima de eventos) |
+| Migrações do banco | Alembic | Planejado |
 | Frontend | React, TypeScript, Vite, Tailwind CSS | Planejado |
 
 ## Funcionalidades
@@ -28,6 +29,7 @@ Construir uma aplicação real e funcional capaz de receber eventos de seguranç
 | Funcionalidade | Situação |
 |---|---|
 | Endpoint de saúde da API (`GET /health`) | Implementado |
+| Persistência: tabela mínima de eventos em SQLite (ainda sem API para gravar eventos) | Implementado |
 | Ingestão de eventos por API | Planejado |
 | Normalização de eventos | Planejado |
 | Motor de detecção | Planejado |
@@ -67,7 +69,7 @@ Copie o modelo e ajuste os valores se quiser (o arquivo `.env` não é versionad
 Copy-Item .env.example .env
 ```
 
-Sem um `.env`, a aplicação usa valores padrão seguros.
+Sem um `.env`, a aplicação usa valores padrão seguros, inclusive um banco SQLite local em `data/vigil.db` (pasta ignorada pelo Git). O caminho pode ser trocado com `VIGIL_DATABASE_URL`.
 
 ## Testes
 

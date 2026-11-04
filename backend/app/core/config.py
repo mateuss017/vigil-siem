@@ -10,6 +10,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 # está três níveis acima. Assim o .env é encontrado de qualquer pasta.
 BASE_DIR = Path(__file__).resolve().parents[3]
 
+# Banco SQLite local, guardado em data/ na raiz do projeto (pasta ignorada pelo Git).
+DEFAULT_DATABASE_URL = f"sqlite:///{(BASE_DIR / 'data' / 'vigil.db').as_posix()}"
+
 
 class Settings(BaseSettings):
     """Valores configuráveis da aplicação, com padrões seguros."""
@@ -17,6 +20,7 @@ class Settings(BaseSettings):
     app_name: str = "Vigil SIEM"
     environment: Literal["development", "testing", "production"] = "development"
     debug: bool = False
+    database_url: str = DEFAULT_DATABASE_URL
 
     model_config = SettingsConfigDict(
         env_file=BASE_DIR / ".env",
