@@ -8,7 +8,7 @@ O estado detalhado do desenvolvimento fica em [docs/PROJECT_STATE.md](docs/PROJE
 |---|---|---|---|
 | 0 | Planejamento e análise | Definir escopo, stack, arquitetura e riscos | Concluída |
 | 1 | Preparação do ambiente | Verificar Python, Git, VS Code e PowerShell | Concluída |
-| 2 | Estrutura inicial | Repositório, .gitignore, licença, README, estado do projeto | Em andamento |
+| 2 | Estrutura inicial | Repositório, .gitignore, licença, README, estado do projeto | Concluída |
 | 3 | Backend e persistência | FastAPI, banco SQLite, models, schemas, migrações e primeiros testes | Planejada |
 | 4 | API de ingestão | Endpoint JSON com validação e persistência de eventos | Planejada |
 | 5 | Normalização e processamento | Modelo de evento padronizado (inspirado no ECS) | Planejada |

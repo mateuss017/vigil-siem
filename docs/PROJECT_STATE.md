@@ -4,11 +4,12 @@ Este arquivo é a fonte de verdade sobre o andamento do desenvolvimento. Deve se
 
 ## Posição atual
 
-- **Fase atual:** 2 - Estrutura inicial
-- **Etapa atual:** 2.5 - Registro de estado do projeto
-- **Última etapa concluída:** 2.4 - README inicial
-- **Último commit confirmado:** `32dcdbe docs: add initial README`
-- **Próximo passo autorizado:** primeiro `git push` para o GitHub e criação do `ROADMAP.md`
+- **Fase atual:** 2 - Estrutura inicial (concluída)
+- **Etapa atual:** nenhuma em andamento; aguardando aprovação para iniciar a Fase 3
+- **Última etapa concluída:** 2.8 - Fechamento da Fase 2
+- **Último commit confirmado:** `2611f88 docs: add project roadmap` (o commit que atualiza este arquivo vem logo depois e pode ser visto com `git log -1`)
+- **Repositório remoto:** https://github.com/mateuss017/vigil-siem (público, branch `main`)
+- **Próximo passo autorizado:** Fase 3 - criar o ambiente virtual Python e iniciar o backend (somente após aprovação)
 
 ## Funcionalidades
 
@@ -20,6 +21,7 @@ Este arquivo é a fonte de verdade sobre o andamento do desenvolvimento. Deve se
 - `.gitignore`: bloqueia segredos (`.env`), ambientes virtuais, bancos locais, logs e caches
 - `LICENSE`: licença MIT
 - `README.md`: apresentação do projeto, com a situação de cada módulo
+- `ROADMAP.md`: fases 0 a 14 e a situação de cada uma
 - `docs/PROJECT_STATE.md`: este arquivo
 
 ## Decisões arquiteturais
@@ -35,7 +37,7 @@ Este arquivo é a fonte de verdade sobre o andamento do desenvolvimento. Deve se
 
 ## Ambiente
 
-- Windows com PowerShell 5.1
+- Windows com PowerShell 5.1 (política de execução do usuário: RemoteSigned)
 - Python 3.13.7, Git 2.56.0, VS Code 1.144.0
 - Node.js e npm: não instalados (necessários só na Fase 9)
 
@@ -55,3 +57,4 @@ Nenhum.
 
 - Escopo grande para uma pessoa: manter o MVP pequeno e avançar uma etapa por vez
 - SQLite tem limitações de concorrência: a troca de banco deve ser considerada na Fase 3 e depois
+- Python 3.13 é recente: antes de instalar dependências, conferir se as bibliotecas escolhidas o suportam
