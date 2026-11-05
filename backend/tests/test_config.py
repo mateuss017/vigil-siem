@@ -40,3 +40,22 @@ def test_invalid_environment_is_rejected(monkeypatch: pytest.MonkeyPatch) -> Non
 
     with pytest.raises(ValidationError):
         Settings(_env_file=None)
+
+def test_max_body_bytes_default_and_override(monkeypatch: pytest.MonkeyPatch) -> None:
+    """O limite do corpo tem um padrão e pode ser alterado por variável de ambiente."""
+    monkeypatch.delenv("VIGIL_MAX_BODY_BYTES", raising=False)
+    assert Settings(_env_file=None).max_body_bytes == 262_144
+
+    monkeypatch.setenv("VIGIL_MAX_BODY_BYTES", "1000")
+    assert Settings(_env_file=None).max_body_bytes == 1000
+
+
+@pytest.mark.parametrize("value", ["0", "-5"])
+def test_max_body_bytes_must_be_positive(
+    monkeypatch: pytest.MonkeyPatch, value: str
+) -> None:
+    """Um limite zero ou negativo deve gerar erro de validação."""
+    monkeypatch.setenv("VIGIL_MAX_BODY_BYTES", value)
+
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None)

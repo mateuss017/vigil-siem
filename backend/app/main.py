@@ -4,6 +4,7 @@ from fastapi import FastAPI
 
 from app.api.events import router as events_router
 from app.core.config import get_settings
+from app.core.limits import MaxBodySizeMiddleware
 
 settings = get_settings()
 
@@ -15,6 +16,9 @@ app = FastAPI(
     description="API de um SIEM construído do zero.",
     debug=settings.debug,
 )
+
+# Recusa pedidos com corpo maior que o limite configurado (resposta 413).
+app.add_middleware(MaxBodySizeMiddleware, max_body_bytes=settings.max_body_bytes)
 
 # Registra os endpoints de eventos (POST e GET /events).
 app.include_router(events_router)
