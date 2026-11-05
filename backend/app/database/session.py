@@ -1,5 +1,6 @@
 """Conexão com o banco de dados e criação das tabelas."""
 
+from collections.abc import Iterator
 from functools import lru_cache
 from pathlib import Path
 
@@ -29,6 +30,17 @@ def get_engine() -> Engine:
 def get_session_factory(engine: Engine | None = None) -> sessionmaker[Session]:
     """Devolve a fábrica de sessões (cada sessão é uma 'conversa' com o banco)."""
     return sessionmaker(bind=engine or get_engine())
+
+
+def get_db() -> Iterator[Session]:
+    """Entrega uma sessão para um único pedido da API e a fecha no final.
+
+    Usada como dependência do FastAPI. O 'with' garante que a sessão seja
+    fechada mesmo se ocorrer um erro durante o pedido. Quem grava os dados
+    (o commit) é o próprio endpoint, e não esta função.
+    """
+    with get_session_factory()() as session:
+        yield session
 
 
 def init_db(engine: Engine | None = None) -> None:
