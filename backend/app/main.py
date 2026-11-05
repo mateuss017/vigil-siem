@@ -2,6 +2,7 @@
 
 from fastapi import FastAPI
 
+from app.api.events import router as events_router
 from app.core.config import get_settings
 
 settings = get_settings()
@@ -14,6 +15,9 @@ app = FastAPI(
     description="API de um SIEM construído do zero.",
     debug=settings.debug,
 )
+
+# Registra os endpoints de eventos (POST /events).
+app.include_router(events_router)
 
 
 @app.get("/health")
