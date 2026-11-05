@@ -12,3 +12,4 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 - Dependências do backend registradas em `backend/requirements.txt`.
 - Configuração por variáveis de ambiente (prefixo `VIGIL_`) com `pydantic-settings` e o modelo `.env.example`.
 - Camada de banco de dados com SQLAlchemy e SQLite local (`data/vigil.db`, fora do Git), tabela mínima `events` e testes que usam banco em memória.
+- Migrações do banco com Alembic: migração inicial da tabela `events`, ambiente ligado às configurações da aplicação e testes que verificam subida, descida e sincronia com os modelos.
