@@ -16,7 +16,7 @@ app = FastAPI(
     debug=settings.debug,
 )
 
-# Registra os endpoints de eventos (POST /events).
+# Registra os endpoints de eventos (POST e GET /events).
 app.include_router(events_router)
 
 
