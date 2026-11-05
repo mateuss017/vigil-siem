@@ -80,3 +80,14 @@ def test_event_read_can_be_built_from_database_model() -> None:
     assert result.received_at == moment
     assert result.source == "firewall-01"
     assert result.message == "login falhou"
+
+def test_event_read_assumes_utc_for_naive_datetimes() -> None:
+    """Horário sem fuso (como o SQLite devolve) deve ser tratado como UTC."""
+    naive_moment = datetime(2026, 11, 5, 12, 0)
+
+    result = EventRead(
+        id=1, received_at=naive_moment, source="firewall-01", message="login falhou"
+    )
+
+    assert result.received_at.tzinfo == timezone.utc
+    assert result.received_at == naive_moment.replace(tzinfo=timezone.utc)

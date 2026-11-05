@@ -1,9 +1,9 @@
 """Schemas dos eventos: o que a API aceita receber e o que ela devolve."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, StringConstraints
+from pydantic import BaseModel, ConfigDict, StringConstraints, field_validator
 
 # O limite da origem acompanha o tamanho da coluna no banco (String(100)).
 SOURCE_MAX_LENGTH = 100
@@ -41,3 +41,16 @@ class EventRead(BaseModel):
     received_at: datetime
     source: str
     message: str
+
+    @field_validator("received_at")
+    @classmethod
+    def _assume_utc_when_naive(cls, value: datetime) -> datetime:
+        """Trata como UTC um horário sem fuso.
+
+        O horário de recebimento é sempre gravado em UTC, mas o SQLite não
+        guarda o fuso e o devolve "sem fuso". Aqui o fuso é restaurado, para a
+        API nunca devolver um horário ambíguo.
+        """
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value
