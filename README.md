@@ -2,7 +2,7 @@
 
 Um SIEM (Security Information and Event Management) construído do zero, com foco em aprendizado e portfólio de Blue Team / SOC.
 
-> **Status: em desenvolvimento inicial.** Existem uma API mínima com endpoint de verificação de saúde, configuração por variáveis de ambiente e uma tabela mínima de eventos em SQLite com migrações, tudo com testes automatizados. Nenhuma funcionalidade de SIEM (ingestão, detecção, alertas) está implementada ainda. Este README descreve o que existe hoje e o que está planejado, e é atualizado a cada etapa concluída.
+> **Status: em desenvolvimento inicial.** Já existe uma API que recebe e lista eventos (com validação, limites de tamanho e banco SQLite com migrações), coberta por testes automatizados. Detecção, correlação, alertas, dashboard e autenticação **ainda não estão implementados**, e a API **não tem autenticação**: use apenas em ambiente local. Este README descreve o que existe hoje e o que está planejado, e é atualizado a cada etapa concluída.
 
 ## Objetivo
 
@@ -18,8 +18,8 @@ Construir uma aplicação real e funcional capaz de receber eventos de seguranç
 
 | Camada | Tecnologia | Situação |
 |---|---|---|
-| Backend | Python, FastAPI, Pydantic | Em uso (API mínima) |
-| Testes | Pytest | Em uso (9 testes) |
+| Backend | Python, FastAPI, Pydantic | Em uso (API de eventos) |
+| Testes | Pytest | Em uso (83 testes) |
 | Banco de dados | SQLite no MVP (PostgreSQL depois) com SQLAlchemy | Em uso (tabela mínima de eventos) |
 | Migrações do banco | Alembic | Em uso (migração inicial da tabela de eventos) |
 | Frontend | React, TypeScript, Vite, Tailwind CSS | Planejado |
@@ -29,20 +29,23 @@ Construir uma aplicação real e funcional capaz de receber eventos de seguranç
 | Funcionalidade | Situação |
 |---|---|
 | Endpoint de saúde da API (`GET /health`) | Implementado |
-| Persistência: tabela mínima de eventos em SQLite (ainda sem API para gravar eventos) | Implementado |
-| Ingestão de eventos por API | Planejado |
+| Ingestão de eventos por API (`POST /events`), com validação e limite de tamanho | Implementado (versão mínima: origem e mensagem) |
+| Listagem de eventos (`GET /events`), com limite e paginação | Implementado |
+| Persistência dos eventos em SQLite, com migrações | Implementado |
 | Normalização de eventos | Planejado |
 | Motor de detecção | Planejado |
 | Correlação de eventos | Planejado |
 | Alertas e seus estados | Planejado |
 | Dashboard | Planejado |
-| Investigação | Planejado |
+| Investigação (filtros e pesquisa) | Planejado |
 | Autenticação e auditoria | Planejado |
 | Integrações (Syslog, Windows Event Logs, MITRE ATT&CK) | Planejado, fora do MVP |
 
 ## Como executar
 
 Pré-requisitos: Windows, PowerShell, Python 3.11 ou superior e Git. Testado com Python 3.13.
+
+**1. Obter o código e instalar as dependências:**
 
 ```powershell
 git clone https://github.com/mateuss017/vigil-siem.git
@@ -52,14 +55,33 @@ python -m venv .venv
 python -m pip install -r backend\requirements.txt
 ```
 
-Subir a API (o servidor escuta apenas em `127.0.0.1`):
+**2. Criar o banco de dados** (a aplicação não o cria sozinha ao iniciar):
 
 ```powershell
 cd backend
-python -m uvicorn app.main:app --reload
+python -m alembic upgrade head
 ```
 
-Com o servidor no ar, `http://127.0.0.1:8000/health` responde `{"status":"ok"}` e `http://127.0.0.1:8000/docs` mostra a documentação interativa gerada automaticamente.
+**3. Subir a API**, escutando apenas no seu computador:
+
+```powershell
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+Com o servidor no ar, `http://127.0.0.1:8000/docs` mostra a documentação interativa gerada automaticamente. Para parar o servidor, use `Ctrl+C`.
+
+**4. Enviar e listar um evento** (em outro terminal):
+
+```powershell
+$evento = @{ source = "firewall-01"; message = "login falhou para o usuario admin" } | ConvertTo-Json
+$bytes = [System.Text.Encoding]::UTF8.GetBytes($evento)
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/events -ContentType "application/json" -Body $bytes
+Invoke-RestMethod http://127.0.0.1:8000/events
+```
+
+Todos os endpoints, formatos, limites e códigos de resposta estão em [docs/API.md](docs/API.md).
+
+> **Segurança:** a API não tem autenticação nem HTTPS. Nunca suba o servidor em outro endereço que não `127.0.0.1`. Veja o [SECURITY.md](SECURITY.md).
 
 ## Configuração
 
@@ -69,14 +91,13 @@ Copie o modelo e ajuste os valores se quiser (o arquivo `.env` não é versionad
 Copy-Item .env.example .env
 ```
 
-Sem um `.env`, a aplicação usa valores padrão seguros, inclusive um banco SQLite local em `data/vigil.db` (pasta ignorada pelo Git). O caminho pode ser trocado com `VIGIL_DATABASE_URL`.
+Sem um `.env`, a aplicação usa valores padrão seguros, inclusive um banco SQLite local em `data/vigil.db` (pasta ignorada pelo Git). O caminho pode ser trocado com `VIGIL_DATABASE_URL`, e o tamanho máximo do corpo de um pedido com `VIGIL_MAX_BODY_BYTES`.
 
 ## Banco de dados e migrações
 
-O esquema do banco é versionado com o Alembic. Para criar o banco (ou atualizá-lo até a migração mais recente), com o ambiente virtual ativo:
+O esquema do banco é versionado com o Alembic. Para criar o banco ou atualizá-lo até a migração mais recente (dentro da pasta `backend`, com o ambiente virtual ativo):
 
 ```powershell
-cd backend
 python -m alembic upgrade head
 ```
 
@@ -85,8 +106,6 @@ Para conferir se os modelos e as migrações estão em sincronia:
 ```powershell
 python -m alembic check
 ```
-
-A aplicação ainda não cria o banco sozinha ao iniciar: use o comando acima.
 
 ## Testes
 
@@ -97,8 +116,12 @@ cd backend
 python -m pytest -v
 ```
 
+Os testes usam um banco SQLite temporário em memória e nunca tocam no banco real.
+
 ## Documentação
 
+- [docs/API.md](docs/API.md): referência da API
+- [SECURITY.md](SECURITY.md): proteções existentes e limitações conhecidas
 - [ROADMAP.md](ROADMAP.md): fases do projeto e situação de cada uma
 - [CHANGELOG.md](CHANGELOG.md): histórico de mudanças
 - [docs/PROJECT_STATE.md](docs/PROJECT_STATE.md): estado detalhado do desenvolvimento
