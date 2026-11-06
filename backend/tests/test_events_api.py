@@ -25,7 +25,7 @@ INVALID_PAYLOADS = [
         {"source": "firewall-01", "message": "a" * (MESSAGE_MAX_LENGTH + 1)},
         id="message-too-long",
     ),
-    pytest.param({**VALID_EVENT, "severity": "alta"}, id="unknown-field"),
+    pytest.param({**VALID_EVENT, "unknown_field": "x"}, id="unknown-field"),
 ]
 
 

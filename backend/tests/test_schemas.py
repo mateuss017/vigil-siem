@@ -66,7 +66,7 @@ def test_text_at_the_limit_is_accepted() -> None:
 def test_unknown_field_is_rejected() -> None:
     """Campos desconhecidos devem gerar erro, e não ser ignorados em silêncio."""
     with pytest.raises(ValidationError):
-        EventCreate(source="firewall-01", message="login falhou", severity="alta")
+        EventCreate(source="firewall-01", message="login falhou", unknown_field="x")
 
 
 def test_event_read_can_be_built_from_database_model() -> None:
