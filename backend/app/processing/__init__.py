@@ -1,0 +1,1 @@
+"""Processamento dos eventos recebidos (normalização e, no futuro, enriquecimento)."""
