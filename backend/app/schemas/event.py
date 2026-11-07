@@ -182,7 +182,7 @@ class EventRead(BaseModel):
     source_ip: str | None = None
     destination_ip: str | None = None
     username: str | None = None
-    raw_event: str | None = None
+    # O raw_event NÃO está aqui de propósito: só o EventDetail o devolve.
 
     @field_validator("received_at", "timestamp")
     @classmethod
@@ -196,3 +196,13 @@ class EventRead(BaseModel):
         if value is not None and value.tzinfo is None:
             return value.replace(tzinfo=timezone.utc)
         return value
+
+
+class EventDetail(EventRead):
+    """Evento isolado, com o original recebido (raw_event).
+
+    O raw_event pode ser grande (até o tamanho máximo do pedido), por isso só
+    aparece quando UM evento é consultado, nunca em listas.
+    """
+
+    raw_event: str | None = None

@@ -2,12 +2,13 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, Request, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database.session import get_db
 from app.models import Event
+from app.processing.normalizer import normalize_event
 from app.schemas import EventCreate, EventRead
 
 router = APIRouter(prefix="/events", tags=["events"])
@@ -18,15 +19,26 @@ DEFAULT_LIMIT = 50
 MAX_LIMIT = 200
 
 
+async def get_raw_body(request: Request) -> bytes:
+    """Entrega o corpo original do pedido, exatamente como chegou.
+
+    O Starlette guarda o corpo depois da primeira leitura, então ler aqui não
+    atrapalha a validação do evento, que também usa esse mesmo corpo.
+    """
+    return await request.body()
+
+
 @router.post("", response_model=EventRead, status_code=status.HTTP_201_CREATED)
 def create_event(
     payload: EventCreate,
+    raw_body: Annotated[bytes, Depends(get_raw_body)],
     db: Annotated[Session, Depends(get_db)],
 ) -> Event:
-    """Recebe um evento, valida, grava no banco e devolve o evento criado."""
-    # Só source e message vêm de fora. O id e o horário de recebimento
-    # são gerados aqui, no servidor.
-    event = Event(source=payload.source, message=payload.message)
+    """Recebe um evento, valida, normaliza, grava no banco e devolve o evento criado."""
+    # O normalizador monta o registro com os campos validados e guarda o corpo
+    # original em raw_event. O id e o horário de recebimento são gerados aqui,
+    # no servidor, e nunca vêm de fora.
+    event = normalize_event(payload, raw_body)
     db.add(event)
     # Este commit é o momento em que o evento passa a existir de verdade.
     db.commit()

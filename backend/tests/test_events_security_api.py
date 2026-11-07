@@ -142,6 +142,6 @@ def test_responses_are_json_with_only_the_expected_fields(client: TestClient) ->
     # por um navegador que abra a resposta.
     assert created.headers["content-type"].startswith("application/json")
     assert listed.headers["content-type"].startswith("application/json")
-    expected = {"id", "received_at", "source", "message", "timestamp", "hostname", "event_type", "severity", "source_ip", "destination_ip", "username", "raw_event"}
+    expected = {"id", "received_at", "source", "message", "timestamp", "hostname", "event_type", "severity", "source_ip", "destination_ip", "username"}
     assert set(created.json()) == expected
     assert set(listed.json()[0]) == expected
