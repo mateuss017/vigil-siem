@@ -174,16 +174,25 @@ class EventRead(BaseModel):
     received_at: datetime
     source: str
     message: str
+    # Campos normalizados. Vazios (null) em eventos gravados sem eles.
+    timestamp: datetime | None = None
+    hostname: str | None = None
+    event_type: str | None = None
+    severity: Severity | None = None
+    source_ip: str | None = None
+    destination_ip: str | None = None
+    username: str | None = None
+    raw_event: str | None = None
 
-    @field_validator("received_at")
+    @field_validator("received_at", "timestamp")
     @classmethod
-    def _assume_utc_when_naive(cls, value: datetime) -> datetime:
+    def _assume_utc_when_naive(cls, value: datetime | None) -> datetime | None:
         """Trata como UTC um horário sem fuso.
 
-        O horário de recebimento é sempre gravado em UTC, mas o SQLite não
-        guarda o fuso e o devolve "sem fuso". Aqui o fuso é restaurado, para a
-        API nunca devolver um horário ambíguo.
+        Os horários são sempre gravados em UTC, mas o SQLite não guarda o fuso
+        e os devolve "sem fuso". Aqui o fuso é restaurado, para a API nunca
+        devolver um horário ambíguo.
         """
-        if value.tzinfo is None:
+        if value is not None and value.tzinfo is None:
             return value.replace(tzinfo=timezone.utc)
         return value
