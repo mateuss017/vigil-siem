@@ -18,8 +18,9 @@ DEFAULT_LIMIT = 50
 # Teto de eventos por consulta: protege a API e o banco de uma consulta gigante.
 MAX_LIMIT = 200
 # Maior número inteiro que o SQLite consegue guardar (2 elevado a 63, menos 1).
-# Um id maior que isso nem chegaria ao banco: causaria um erro 500.
-MAX_EVENT_ID = 2**63 - 1
+# Um número maior que isso nem chegaria ao banco: causaria um erro 500.
+MAX_SQLITE_INTEGER = 2**63 - 1
+MAX_EVENT_ID = MAX_SQLITE_INTEGER
 
 
 async def get_raw_body(request: Request) -> bytes:
@@ -54,7 +55,7 @@ def create_event(
 def list_events(
     db: Annotated[Session, Depends(get_db)],
     limit: Annotated[int, Query(ge=1, le=MAX_LIMIT)] = DEFAULT_LIMIT,
-    offset: Annotated[int, Query(ge=0)] = 0,
+    offset: Annotated[int, Query(ge=0, le=MAX_SQLITE_INTEGER)] = 0,
 ) -> list[Event]:
     """Lista eventos gravados, do mais novo para o mais antigo."""
     statement = (

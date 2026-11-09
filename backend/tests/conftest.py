@@ -41,3 +41,22 @@ def client(session_factory: sessionmaker[Session]) -> Iterator[TestClient]:
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def lenient_client(session_factory: sessionmaker[Session]) -> Iterator[TestClient]:
+    """Como o 'client', mas devolve um erro interno como resposta 500.
+
+    O 'client' normal relança o erro dentro do teste, e o teste só mostraria a
+    exceção. Este devolve a resposta 500, como um cliente de verdade veria, e
+    assim o teste consegue afirmar que a API respondeu 422 em vez de 500.
+    """
+
+    def override_get_db() -> Iterator[Session]:
+        with session_factory() as session:
+            yield session
+
+    app.dependency_overrides[get_db] = override_get_db
+    with TestClient(app, raise_server_exceptions=False) as test_client:
+        yield test_client
+    app.dependency_overrides.clear()

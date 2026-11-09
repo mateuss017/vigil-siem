@@ -1,9 +1,11 @@
 """Ponto de entrada da API do Vigil SIEM."""
 
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 
 from app.api.events import router as events_router
 from app.core.config import get_settings
+from app.core.errors import validation_error_handler
 from app.core.limits import MaxBodySizeMiddleware
 
 settings = get_settings()
@@ -20,7 +22,10 @@ app = FastAPI(
 # Recusa pedidos com corpo maior que o limite configurado (resposta 413).
 app.add_middleware(MaxBodySizeMiddleware, max_body_bytes=settings.max_body_bytes)
 
-# Registra os endpoints de eventos (POST e GET /events).
+# Os erros de validação (422) não repetem o texto enviado pelo cliente.
+app.add_exception_handler(RequestValidationError, validation_error_handler)
+
+# Registra os endpoints de eventos (POST e GET /events e GET /events/{id}).
 app.include_router(events_router)
 
 

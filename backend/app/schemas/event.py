@@ -42,18 +42,43 @@ class Severity(StrEnum):
     CRITICAL = "critical"
 
 
-# Caracteres de controle: quebras de linha, tabulação, nulo etc.
+# Todos os caracteres de controle: quebra de linha, tabulação, nulo, ESC etc.
 _CONTROL_CHARACTERS = re.compile(r"[\x00-\x1f\x7f]")
+# Os mesmos, EXCETO tabulação (\x09), quebra de linha (\x0a) e retorno de
+# carro (\x0d), que são legítimos em mensagens de várias linhas.
+_CONTROL_CHARACTERS_EXCEPT_LINE_BREAKS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+
+
+def _reject_unencodable_text(value: str) -> str:
+    """Recusa texto que não pode ser escrito em UTF-8.
+
+    Um "surrogate" solto (como o \ud800 de um JSON) é aceito pelo Python, mas
+    nenhum arquivo ou banco UTF-8 consegue guardá-lo: sem esta conferência,
+    gravar o evento causaria um erro interno (500).
+    """
+    try:
+        value.encode("utf-8")
+    except UnicodeEncodeError:
+        raise ValueError("must not contain invalid Unicode characters") from None
+    return value
 
 
 def _reject_control_characters(value: str) -> str:
     """Recusa quebras de linha e outros caracteres de controle no meio do texto.
 
-    Em campos curtos (host, usuário, tipo), uma quebra de linha serviria para
-    forjar linhas falsas em arquivos de log ("log injection").
+    Em campos curtos (origem, host, usuário, tipo), uma quebra de linha serviria
+    para forjar linhas falsas em arquivos de log ("log injection"), e um ESC
+    poderia "desenhar" na tela de quem lê o log.
     """
     if _CONTROL_CHARACTERS.search(value):
         raise ValueError("must not contain control characters")
+    return value
+
+
+def _reject_control_characters_except_line_breaks(value: str) -> str:
+    """Na mensagem, recusa os controles perigosos, mas aceita linhas e tabulações."""
+    if _CONTROL_CHARACTERS_EXCEPT_LINE_BREAKS.search(value):
+        raise ValueError("must not contain control characters other than line breaks and tabs")
     return value
 
 
@@ -86,18 +111,20 @@ def _to_utc_within_range(value: datetime) -> datetime:
     return value
 
 
-# Texto sem espaços nas pontas, com pelo menos 1 caractere e um tamanho máximo.
+# A ordem dos itens importa: primeiro a limpeza do texto (StringConstraints),
+# depois as conferências (AfterValidator), na ordem em que aparecem.
 Source = Annotated[
     str,
     StringConstraints(strip_whitespace=True, min_length=1, max_length=SOURCE_MAX_LENGTH),
+    AfterValidator(_reject_unencodable_text),
+    AfterValidator(_reject_control_characters),
 ]
 Message = Annotated[
     str,
     StringConstraints(strip_whitespace=True, min_length=1, max_length=MESSAGE_MAX_LENGTH),
+    AfterValidator(_reject_unencodable_text),
+    AfterValidator(_reject_control_characters_except_line_breaks),
 ]
-
-# Campos novos. A ordem dos itens importa: primeiro a limpeza do texto
-# (StringConstraints), depois a conferência (AfterValidator).
 Hostname = Annotated[
     str,
     StringConstraints(
@@ -106,6 +133,7 @@ Hostname = Annotated[
         min_length=1,
         max_length=HOSTNAME_MAX_LENGTH,
     ),
+    AfterValidator(_reject_unencodable_text),
     AfterValidator(_reject_control_characters),
 ]
 EventType = Annotated[
@@ -116,6 +144,7 @@ EventType = Annotated[
         min_length=1,
         max_length=EVENT_TYPE_MAX_LENGTH,
     ),
+    AfterValidator(_reject_unencodable_text),
     AfterValidator(_reject_control_characters),
 ]
 # O usuário NÃO vai para minúsculas: em alguns sistemas, maiúsculas e minúsculas
@@ -123,6 +152,7 @@ EventType = Annotated[
 Username = Annotated[
     str,
     StringConstraints(strip_whitespace=True, min_length=1, max_length=USERNAME_MAX_LENGTH),
+    AfterValidator(_reject_unencodable_text),
     AfterValidator(_reject_control_characters),
 ]
 IpAddress = Annotated[
@@ -178,7 +208,11 @@ class EventRead(BaseModel):
     timestamp: datetime | None = None
     hostname: str | None = None
     event_type: str | None = None
-    severity: Severity | None = None
+    # Na SAÍDA a gravidade é texto comum, e não a lista fechada (Severity): uma
+    # linha com valor inesperado (por exemplo, editada à mão no banco) não deve
+    # derrubar a listagem inteira. Na ENTRADA a validação continua rígida: só os
+    # 5 níveis do Severity são gravados.
+    severity: str | None = None
     source_ip: str | None = None
     destination_ip: str | None = None
     username: str | None = None
