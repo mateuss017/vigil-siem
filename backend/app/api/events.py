@@ -2,14 +2,14 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database.session import get_db
 from app.models import Event
 from app.processing.normalizer import normalize_event
-from app.schemas import EventCreate, EventRead
+from app.schemas import EventCreate, EventDetail, EventRead
 
 router = APIRouter(prefix="/events", tags=["events"])
 
@@ -17,6 +17,9 @@ router = APIRouter(prefix="/events", tags=["events"])
 DEFAULT_LIMIT = 50
 # Teto de eventos por consulta: protege a API e o banco de uma consulta gigante.
 MAX_LIMIT = 200
+# Maior número inteiro que o SQLite consegue guardar (2 elevado a 63, menos 1).
+# Um id maior que isso nem chegaria ao banco: causaria um erro 500.
+MAX_EVENT_ID = 2**63 - 1
 
 
 async def get_raw_body(request: Request) -> bytes:
@@ -63,3 +66,18 @@ def list_events(
         .offset(offset)
     )
     return list(db.scalars(statement).all())
+
+
+@router.get("/{event_id}", response_model=EventDetail)
+def get_event(
+    event_id: Annotated[int, Path(ge=1, le=MAX_EVENT_ID)],
+    db: Annotated[Session, Depends(get_db)],
+) -> Event:
+    """Devolve um evento isolado, com o original recebido (raw_event)."""
+    # db.get busca direto pela chave primária (o id).
+    event = db.get(Event, event_id)
+    if event is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Event not found."
+        )
+    return event

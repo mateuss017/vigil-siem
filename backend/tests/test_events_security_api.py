@@ -126,8 +126,8 @@ def test_events_cannot_be_changed_or_deleted_through_the_api(
     assert response.status_code == 405
 
 
-def test_single_event_route_does_not_exist_yet(client: TestClient) -> None:
-    """Ainda não existe rota para um evento isolado (GET /events/{id})."""
+def test_unknown_event_id_returns_404(client: TestClient) -> None:
+    """Um id que não existe deve receber 404 (a rota do evento isolado existe)."""
     assert client.get("/events/1").status_code == 404
 
 
