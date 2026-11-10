@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 def _safe_text(value: str) -> str:
     """Troca caracteres que o UTF-8 não consegue escrever por um código visível.
 
-    Sem isso, um nome de campo com um "surrogate" solto (como \ud800) faria o
+    Sem isso, um nome de campo com um "surrogate" solto (como U+D800) faria o
     próprio servidor falhar ao escrever a resposta de erro.
     """
     return value.encode("utf-8", errors="backslashreplace").decode("utf-8")

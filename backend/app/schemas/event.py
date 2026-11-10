@@ -52,7 +52,7 @@ _CONTROL_CHARACTERS_EXCEPT_LINE_BREAKS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1
 def _reject_unencodable_text(value: str) -> str:
     """Recusa texto que não pode ser escrito em UTF-8.
 
-    Um "surrogate" solto (como o \ud800 de um JSON) é aceito pelo Python, mas
+    Um "surrogate" solto (como o U+D800 de um JSON) é aceito pelo Python, mas
     nenhum arquivo ou banco UTF-8 consegue guardá-lo: sem esta conferência,
     gravar o evento causaria um erro interno (500).
     """
