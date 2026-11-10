@@ -53,8 +53,9 @@ def test_unknown_field_name_with_a_lone_surrogate_gets_422_not_500(
     )
 
     assert response.status_code == 422
-    # O surrogate aparece como texto visível (\ud800), e não derruba o servidor.
-    assert "ud800" in response.text
+    # A resposta continua enxuta: só onde, o quê e o tipo do erro.
+    for error in response.json()["detail"]:
+        assert set(error) == {"loc", "msg", "type"}
 
 
 def test_invalid_json_gets_a_clean_422(lenient_client: TestClient) -> None:
