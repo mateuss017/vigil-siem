@@ -2,7 +2,7 @@
 
 Um SIEM (Security Information and Event Management) construído do zero, com foco em aprendizado e portfólio de Blue Team / SOC.
 
-> **Status: em desenvolvimento inicial.** Já existe uma API que recebe e lista eventos (com validação, limites de tamanho e banco SQLite com migrações), coberta por testes automatizados. Detecção, correlação, alertas, dashboard e autenticação **ainda não estão implementados**, e a API **não tem autenticação**: use apenas em ambiente local. Este README descreve o que existe hoje e o que está planejado, e é atualizado a cada etapa concluída.
+> **Status: em desenvolvimento.** Já existe uma API que recebe, normaliza e guarda eventos de segurança, com banco SQLite versionado por migrações e testes automatizados. Detecção, correlação, alertas, dashboard e autenticação **ainda não estão implementados**, e a API **não tem autenticação**: use apenas em ambiente local. Este README descreve o que existe hoje e o que está planejado, e é atualizado a cada etapa concluída.
 
 ## Objetivo
 
@@ -18,10 +18,10 @@ Construir uma aplicação real e funcional capaz de receber eventos de seguranç
 
 | Camada | Tecnologia | Situação |
 |---|---|---|
-| Backend | Python, FastAPI, Pydantic | Em uso (API de eventos) |
-| Testes | Pytest | Em uso (83 testes) |
-| Banco de dados | SQLite no MVP (PostgreSQL depois) com SQLAlchemy | Em uso (tabela mínima de eventos) |
-| Migrações do banco | Alembic | Em uso (migração inicial da tabela de eventos) |
+| Backend | Python, FastAPI, Pydantic | Em uso |
+| Banco de dados | SQLite no MVP (PostgreSQL depois) com SQLAlchemy | Em uso |
+| Migrações do banco | Alembic | Em uso (2 migrações) |
+| Testes | Pytest | Em uso (253 testes) |
 | Frontend | React, TypeScript, Vite, Tailwind CSS | Planejado |
 
 ## Funcionalidades
@@ -29,10 +29,11 @@ Construir uma aplicação real e funcional capaz de receber eventos de seguranç
 | Funcionalidade | Situação |
 |---|---|
 | Endpoint de saúde da API (`GET /health`) | Implementado |
-| Ingestão de eventos por API (`POST /events`), com validação e limite de tamanho | Implementado (versão mínima: origem e mensagem) |
+| Ingestão de eventos por API (`POST /events`), com validação e limite de tamanho | Implementado |
+| Normalização dos eventos (horário em UTC, IPs em forma padrão, gravidade em 5 níveis, textos higienizados) com preservação do original (`raw_event`) | Implementado |
 | Listagem de eventos (`GET /events`), com limite e paginação | Implementado |
-| Persistência dos eventos em SQLite, com migrações | Implementado |
-| Normalização de eventos | Planejado |
+| Consulta de um evento isolado, com o original recebido (`GET /events/{id}`) | Implementado |
+| Persistência em SQLite, com migrações | Implementado |
 | Motor de detecção | Planejado |
 | Correlação de eventos | Planejado |
 | Alertas e seus estados | Planejado |
@@ -73,13 +74,20 @@ Com o servidor no ar, `http://127.0.0.1:8000/docs` mostra a documentação inter
 **4. Enviar e listar um evento** (em outro terminal):
 
 ```powershell
-$evento = @{ source = "firewall-01"; message = "login falhou para o usuario admin" } | ConvertTo-Json
+$evento = @{
+    source = "firewall-01"
+    message = "login falhou para o usuario admin"
+    hostname = "WEB-01.Example.COM"
+    severity = "HIGH"
+    source_ip = "203.0.113.10"
+} | ConvertTo-Json
 $bytes = [System.Text.Encoding]::UTF8.GetBytes($evento)
 Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/events -ContentType "application/json" -Body $bytes
-Invoke-RestMethod http://127.0.0.1:8000/events
+$eventos = Invoke-RestMethod http://127.0.0.1:8000/events
+$eventos
 ```
 
-Todos os endpoints, formatos, limites e códigos de resposta estão em [docs/API.md](docs/API.md).
+O evento volta normalizado (`hostname` em minúsculas, `severity` como `high`). Todos os endpoints, campos, limites e códigos de resposta estão em [docs/API.md](docs/API.md).
 
 > **Segurança:** a API não tem autenticação nem HTTPS. Nunca suba o servidor em outro endereço que não `127.0.0.1`. Veja o [SECURITY.md](SECURITY.md).
 
@@ -107,6 +115,8 @@ Para conferir se os modelos e as migrações estão em sincronia:
 python -m alembic check
 ```
 
+Faça uma cópia do banco antes de migrar. A tabela, as migrações e os cuidados estão em [docs/DATABASE.md](docs/DATABASE.md).
+
 ## Testes
 
 Com o ambiente virtual ativo:
@@ -121,6 +131,7 @@ Os testes usam um banco SQLite temporário em memória e nunca tocam no banco re
 ## Documentação
 
 - [docs/API.md](docs/API.md): referência da API
+- [docs/DATABASE.md](docs/DATABASE.md): tabela, migrações e operação do banco
 - [SECURITY.md](SECURITY.md): proteções existentes e limitações conhecidas
 - [ROADMAP.md](ROADMAP.md): fases do projeto e situação de cada uma
 - [CHANGELOG.md](CHANGELOG.md): histórico de mudanças

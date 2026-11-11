@@ -11,7 +11,7 @@ O estado detalhado do desenvolvimento fica em [docs/PROJECT_STATE.md](docs/PROJE
 | 2 | Estrutura inicial | Repositório, .gitignore, licença, README, estado do projeto | Concluída |
 | 3 | Backend e persistência | FastAPI, configuração, banco SQLite, models, migrações e primeiros testes | Concluída |
 | 4 | API de ingestão | Endpoint JSON, schemas de validação e persistência de eventos | Concluída |
-| 5 | Normalização e processamento | Modelo de evento padronizado (inspirado no ECS) | Planejada |
+| 5 | Normalização e processamento | Modelo de evento padronizado (inspirado no ECS) | Concluída |
 | 6 | Motor de detecção | Regras configuráveis, severidade e histórico de detecções | Planejada |
 | 7 | Correlação | Agrupamento por IP, usuário, host e janela de tempo | Planejada |
 | 8 | Alertas | Geração, estados (aberto, em investigação, resolvido, falso positivo) e histórico | Planejada |
