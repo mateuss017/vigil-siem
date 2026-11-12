@@ -61,7 +61,7 @@ Além dos campos acima, a resposta traz:
 |---|---|---|
 | `id` | Todas as respostas | Número do evento, gerado pelo banco |
 | `received_at` | Todas as respostas | Quando o evento **chegou** ao SIEM (UTC, gerado pelo servidor) |
-| `raw_event` | Só em `GET /events/{event_id}` | O corpo do pedido **exatamente como chegou**, antes da normalização (espaços, maiúsculas e ordem dos campos preservados). Bytes que não sejam UTF-8 válido são trocados por `�`. |
+| `raw_event` | Só em `GET /events/{event_id}` | O corpo do pedido **exatamente como chegou**, antes da normalização (espaços, maiúsculas e ordem dos campos preservados). Bytes que não sejam UTF-8 válido são trocados pelo caractere de substituição do Unicode (U+FFFD). |
 
 O `raw_event` fica fora do `POST` e da listagem de propósito: ele pode ser grande (até o limite de tamanho do pedido), e uma lista com muitos eventos ficaria enorme.
 
