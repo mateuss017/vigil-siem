@@ -4,12 +4,12 @@ Este arquivo é a fonte de verdade sobre o andamento do desenvolvimento. Deve se
 
 ## Posição atual
 
-- **Fase atual:** 5 - Normalização e processamento (concluída, aguardando aprovação)
-- **Etapa atual:** nenhuma em andamento
-- **Última etapa concluída:** 5.6 - Documentação da Fase 5
-- **Último commit confirmado:** `fefa3f3 docs: document phase 5 API, database schema and security` (o commit que atualiza este arquivo vem logo depois e pode ser visto com `git log -1`)
+- **Fase atual:** 6 - Motor de detecção (em andamento)
+- **Etapa atual:** 6.0 - Guias de arquitetura e de desenvolvimento
+- **Última etapa concluída:** 5.6 - Documentação da Fase 5 (Fase 5 concluída)
+- **Último commit confirmado:** `2bb7aa1 docs: document phase 5 and update project state` (o commit que atualiza este arquivo vem logo depois e pode ser visto com `git log -1`)
 - **Repositório remoto:** https://github.com/mateuss017/vigil-siem (público, branch `main`)
-- **Próximo passo autorizado:** Fase 6 - Motor de detecção (somente após aprovação). Antes dela, criar `docs/ARCHITECTURE.md` e `docs/DEVELOPMENT.md`.
+- **Próximo passo autorizado:** etapa 6.1 - tabelas de detecções e terceira migração (somente após aprovação)
 
 ## Funcionalidades
 
@@ -39,6 +39,8 @@ Este arquivo é a fonte de verdade sobre o andamento do desenvolvimento. Deve se
 - `SECURITY.md`: proteções existentes e limitações conhecidas
 - `docs/API.md`: referência dos endpoints
 - `docs/DATABASE.md`: tabela, migrações e operação do banco
+- `docs/ARCHITECTURE.md`: organização do código, fluxo de um evento e decisões de desenho
+- `docs/DEVELOPMENT.md`: como configurar, rodar, testar, migrar e versionar
 - `.env.example`: modelo de configuração (o `.env` real não é versionado)
 - `backend/app/main.py`: aplicação FastAPI, middleware de limite de tamanho, tratamento de erros e registro dos endpoints
 - `backend/app/api/events.py`: endpoints de eventos
@@ -83,6 +85,13 @@ Este arquivo é a fonte de verdade sobre o andamento do desenvolvimento. Deve se
 - Custo zero: apenas ferramentas gratuitas e locais
 - Arquivos de texto gravados em UTF-8 sem BOM (o Windows PowerShell 5.1 grava com BOM por padrão)
 - Cliente de testes da API: `httpx2`, porque o Starlette marcou o uso do `httpx` como obsoleto
+- Fase 6 (decisões aprovadas, ainda não implementadas):
+  - Janelas de tempo pelo `received_at` (gerado pelo servidor, não pode ser forjado); um log que chega atrasado conta pela hora de chegada, e isso será documentado como limitação
+  - As regras rodam logo depois do `commit` do evento, de forma isolada: uma falha em regra é registrada no log e não afeta a ingestão
+  - Regras em classes Python com parâmetros visíveis, sem arquivo de configuração externo por enquanto
+  - Só as detecções são gravadas no banco; as execuções das regras vão para o log do servidor
+  - Os tipos de evento seguem uma convenção (`login_failed`, `login_success`), e a lista de nomes aceitos é um parâmetro da regra
+  - Regras iniciais: muitas falhas de login de um mesmo IP, login com sucesso depois de muitas falhas e evento de gravidade crítica
 
 ## Ambiente
 

@@ -17,7 +17,7 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 - Limite de tamanho do corpo dos pedidos (padrão 256 KiB, configurável por `VIGIL_MAX_BODY_BYTES`), com resposta 413 mesmo quando o cliente não declara o tamanho.
 - Tratamento dos erros de validação (422) que informa onde, o quê e o tipo do erro, sem repetir o texto enviado.
 - Testes automatizados (253): configuração, banco, migrações (incluindo a preservação de dados), schemas, normalizador, API, segurança da entrada e endurecimento contra entradas hostis.
-- Documentação: `docs/API.md`, `docs/DATABASE.md` e `SECURITY.md`, com as limitações conhecidas.
+- Documentação: `docs/API.md`, `docs/DATABASE.md`, `docs/ARCHITECTURE.md`, `docs/DEVELOPMENT.md` e `SECURITY.md`, com as limitações conhecidas.
 
 ### Alterado
 - `POST /events` passou a aceitar os campos opcionais e a gravá-los normalizados. A resposta do `POST` e a listagem não incluem o `raw_event`.

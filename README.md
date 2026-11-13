@@ -132,6 +132,8 @@ Os testes usam um banco SQLite temporário em memória e nunca tocam no banco re
 
 - [docs/API.md](docs/API.md): referência da API
 - [docs/DATABASE.md](docs/DATABASE.md): tabela, migrações e operação do banco
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): organização do código e fluxo de um evento
+- [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md): como desenvolver, testar e versionar
 - [SECURITY.md](SECURITY.md): proteções existentes e limitações conhecidas
 - [ROADMAP.md](ROADMAP.md): fases do projeto e situação de cada uma
 - [CHANGELOG.md](CHANGELOG.md): histórico de mudanças
