@@ -16,8 +16,10 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 - Consulta de um evento isolado (`GET /events/{event_id}`), única rota que devolve o `raw_event`, com resposta 404 quando o evento não existe.
 - Limite de tamanho do corpo dos pedidos (padrão 256 KiB, configurável por `VIGIL_MAX_BODY_BYTES`), com resposta 413 mesmo quando o cliente não declara o tamanho.
 - Tratamento dos erros de validação (422) que informa onde, o quê e o tipo do erro, sem repetir o texto enviado.
-- Testes automatizados (253): configuração, banco, migrações (incluindo a preservação de dados), schemas, normalizador, API, segurança da entrada e endurecimento contra entradas hostis.
+- Testes automatizados (267): configuração, banco, migrações (incluindo a preservação de dados), schemas, normalizador, API, segurança da entrada e endurecimento contra entradas hostis.
 - Documentação: `docs/API.md`, `docs/DATABASE.md`, `docs/ARCHITECTURE.md`, `docs/DEVELOPMENT.md` e `SECURITY.md`, com as limitações conhecidas.
+
+- Tabelas `detections` e `detection_events` (terceira migração) para as detecções e os eventos que as provam, e verificação de chaves estrangeiras do SQLite ligada a cada conexão.
 
 ### Alterado
 - `POST /events` passou a aceitar os campos opcionais e a gravá-los normalizados. A resposta do `POST` e a listagem não incluem o `raw_event`.

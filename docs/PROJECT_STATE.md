@@ -5,11 +5,11 @@ Este arquivo é a fonte de verdade sobre o andamento do desenvolvimento. Deve se
 ## Posição atual
 
 - **Fase atual:** 6 - Motor de detecção (em andamento)
-- **Etapa atual:** 6.0 - Guias de arquitetura e de desenvolvimento
-- **Última etapa concluída:** 5.6 - Documentação da Fase 5 (Fase 5 concluída)
-- **Último commit confirmado:** `2bb7aa1 docs: document phase 5 and update project state` (o commit que atualiza este arquivo vem logo depois e pode ser visto com `git log -1`)
+- **Etapa atual:** nenhuma em andamento (6.1 concluída)
+- **Última etapa concluída:** 6.1 - Tabelas de detecções e terceira migração
+- **Último commit confirmado:** `4d92d7d docs: add architecture and development guides` (o commit que atualiza este arquivo vem logo depois e pode ser visto com `git log -1`)
 - **Repositório remoto:** https://github.com/mateuss017/vigil-siem (público, branch `main`)
-- **Próximo passo autorizado:** etapa 6.1 - tabelas de detecções e terceira migração (somente após aprovação)
+- **Próximo passo autorizado:** etapa 6.2 - estrutura das regras e motor de detecção (somente após aprovação)
 
 ## Funcionalidades
 
@@ -22,11 +22,11 @@ Este arquivo é a fonte de verdade sobre o andamento do desenvolvimento. Deve se
   - Limite de tamanho do corpo dos pedidos (256 KiB), com resposta 413
   - Erros 422 que não repetem o texto enviado
   - Configuração por variáveis de ambiente
-  - Banco SQLite com SQLAlchemy e duas migrações com Alembic
+  - Banco SQLite com SQLAlchemy e três migrações com Alembic (a terceira cria as tabelas de detecções, ainda sem uso)
 - **Observações:**
   - A API **não tem autenticação** (Fase 11) e só deve escutar em `127.0.0.1`.
   - A aplicação não cria o banco ao iniciar: ele é criado com `python -m alembic upgrade head` (dentro de `backend/`).
-  - O `data/vigil.db` está na migração `6c8445d95a33` e vazio. Existe uma cópia de segurança anterior à migração em `data/vigil.db.bak` (ignorada pelo Git).
+  - O `data/vigil.db` está na migração `f6f62d67b008` e sem eventos. Existem cópias de segurança anteriores às migrações em `data/vigil.db.bak` (antes da `6c8445d95a33`) e `data/vigil.db.bak-fase6` (antes da `f6f62d67b008`), ignoradas pelo Git.
 - **Pendentes:** motor de detecção, correlação, alertas, dashboard, investigação, autenticação, auditoria
 
 ## Arquivos importantes
@@ -51,6 +51,8 @@ Este arquivo é a fonte de verdade sobre o andamento do desenvolvimento. Deve se
 - `backend/app/core/errors.py`: formato dos erros de validação (422)
 - `backend/app/database/`: classe base dos modelos, engine, sessões, `get_db()` e `init_db()`
 - `backend/app/models/event.py`: modelo do evento (12 colunas)
+- `backend/app/models/detection.py`: modelos das detecções e da tabela de ligação com os eventos de prova
+- `backend/app/core/clock.py`: relógio da aplicação (`utc_now`)
 - `backend/alembic.ini` e `backend/alembic/`: migrações do banco (`env.py` usa as configurações da aplicação)
 - `backend/tests/`: testes (`conftest.py` reúne as preparações compartilhadas da API)
 - `backend/requirements.txt`: dependências com versões exatas
@@ -74,6 +76,7 @@ Este arquivo é a fonte de verdade sobre o andamento do desenvolvimento. Deve se
 - `id` e `offset` limitados ao maior inteiro do SQLite, para não causarem erro interno
 - Os erros 422 não repetem o valor enviado, e nomes de campo com caracteres inválidos são higienizados
 - O `commit` da gravação é feito pelo endpoint, e não pela dependência de sessão (`get_db`)
+- As chaves estrangeiras do SQLite são ligadas a cada conexão (`PRAGMA foreign_keys=ON`): um evento que serve de prova de uma detecção não pode ser apagado, e apagar uma detecção não apaga eventos
 - Eventos não podem ser alterados nem apagados pela API (sem rotas `PUT`, `PATCH` e `DELETE`)
 - Listagem ordenada por horário de recebimento e, no empate, por `id`, ambos do maior para o menor
 - Limites: `source` até 100 caracteres, `message` até 10.000, corpo do pedido até 262.144 bytes (configurável) e listagem até 200 eventos por consulta
@@ -107,8 +110,8 @@ Registradas em `backend/requirements.txt`: fastapi 0.162.0, uvicorn 0.54.0, pyda
 
 ## Testes
 
-- Testes automatizados: 253 (configuração, banco, migrações, schemas, normalizador, sessão, API, segurança da entrada e endurecimento)
-- Último resultado: 253 passed, sem avisos
+- Testes automatizados: 267 (configuração, banco, migrações, schemas, normalizador, sessão, API, segurança da entrada e endurecimento)
+- Último resultado: 267 passed, sem avisos
 - Verificações manuais com o servidor real e um banco temporário: ingestão, listagem, evento isolado e 19 pedidos hostis, sem nenhuma resposta 500
 
 ## Problemas conhecidos

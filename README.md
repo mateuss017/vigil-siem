@@ -20,8 +20,8 @@ Construir uma aplicação real e funcional capaz de receber eventos de seguranç
 |---|---|---|
 | Backend | Python, FastAPI, Pydantic | Em uso |
 | Banco de dados | SQLite no MVP (PostgreSQL depois) com SQLAlchemy | Em uso |
-| Migrações do banco | Alembic | Em uso (2 migrações) |
-| Testes | Pytest | Em uso (253 testes) |
+| Migrações do banco | Alembic | Em uso (3 migrações) |
+| Testes | Pytest | Em uso (267 testes) |
 | Frontend | React, TypeScript, Vite, Tailwind CSS | Planejado |
 
 ## Funcionalidades
