@@ -1,16 +1,12 @@
 """Modelo da tabela de eventos de segurança."""
 
-from datetime import datetime, timezone
+from datetime import datetime
 
 from sqlalchemy import DateTime, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
+from app.core.clock import utc_now
 from app.database.base import Base
-
-
-def _utcnow() -> datetime:
-    """Momento atual em UTC, usado como horário de recebimento do evento."""
-    return datetime.now(timezone.utc)
 
 
 class Event(Base):
@@ -24,7 +20,7 @@ class Event(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     # Quando o evento CHEGOU ao SIEM (gerado pelo servidor).
-    received_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    received_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     source: Mapped[str] = mapped_column(String(100))
     message: Mapped[str] = mapped_column(Text)
 

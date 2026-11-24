@@ -3,8 +3,9 @@
 from collections.abc import Iterator
 from functools import lru_cache
 from pathlib import Path
+from typing import Any
 
-from sqlalchemy import Engine, create_engine
+from sqlalchemy import Engine, create_engine, event
 from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -19,12 +20,30 @@ def _ensure_sqlite_directory(database_url: str) -> None:
         Path(url.database).parent.mkdir(parents=True, exist_ok=True)
 
 
+def enable_sqlite_foreign_keys(engine: Engine) -> None:
+    """Liga a verificação de chaves estrangeiras em cada conexão SQLite.
+
+    O SQLite vem com essa verificação desligada, e o PRAGMA só vale para a
+    conexão em que é executado. Por isso ele é aplicado a cada conexão nova.
+    """
+    if engine.dialect.name != "sqlite":
+        return
+
+    @event.listens_for(engine, "connect")
+    def _turn_on(dbapi_connection: Any, connection_record: Any) -> None:
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
+
+
 @lru_cache
 def get_engine() -> Engine:
     """Cria o 'motor' de conexão com o banco, uma única vez."""
     database_url = get_settings().database_url
     _ensure_sqlite_directory(database_url)
-    return create_engine(database_url)
+    engine = create_engine(database_url)
+    enable_sqlite_foreign_keys(engine)
+    return engine
 
 
 def get_session_factory(engine: Engine | None = None) -> sessionmaker[Session]:

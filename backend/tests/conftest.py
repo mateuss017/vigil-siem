@@ -8,7 +8,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from app.database.session import get_db, get_session_factory, init_db
+from app.database.session import (
+    enable_sqlite_foreign_keys,
+    get_db,
+    get_session_factory,
+    init_db,
+)
 from app.main import app
 
 
@@ -23,6 +28,8 @@ def session_factory() -> Iterator[sessionmaker[Session]]:
         poolclass=StaticPool,
         connect_args={"check_same_thread": False},
     )
+    # Igual ao banco real: as chaves estrangeiras são verificadas.
+    enable_sqlite_foreign_keys(engine)
     init_db(engine)
     yield get_session_factory(engine)
     engine.dispose()
